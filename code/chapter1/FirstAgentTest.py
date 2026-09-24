@@ -60,6 +60,9 @@ def get_weather(city: str) -> str:
 
 import os
 from tavily import TavilyClient
+from dotenv import load_dotenv
+
+load_dotenv()  # 加载.env文件中的环境变量
 
 def get_attraction(city: str, weather: str) -> str:
     """
@@ -67,7 +70,7 @@ def get_attraction(city: str, weather: str) -> str:
     """
 
     # 从环境变量或主程序配置中获取API密钥
-    api_key = os.environ.get("TAVILY_API_KEY") # 推荐方式
+    api_key = os.getenv("TAVILY_API_KEY")
     # 或者，我们可以在主循环中传入，如此处代码所示
 
     if not api_key:
@@ -142,10 +145,9 @@ import re
 
 # --- 1. 配置LLM客户端 ---
 # 请根据您使用的服务，将这里替换成对应的凭证和地址
-API_KEY = "YOUR_API_KEY"
-BASE_URL = "YOUR_BASE_URL"
-MODEL_ID = "YOUR_MODEL_ID"
-os.environ['TAVILY_API_KEY'] = "YOUR_TAVILY_API_KEY"
+API_KEY = os.getenv("LLM_API_KEY")
+BASE_URL = os.getenv("LLM_BASE_URL")
+MODEL_ID = os.getenv("LLM_MODEL_ID")
 
 llm = OpenAICompatibleClient(
     model=MODEL_ID,

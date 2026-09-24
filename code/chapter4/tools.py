@@ -47,12 +47,48 @@ def search(query: str) -> str:
 
     except Exception as e:
         return f"搜索时发生错误: {e}"
-    
+
+import ast, operator
+
+def calculator(expression: str) -> str:
+    """
+    一个"计算器"工具，使其能够处理复杂的数学计算问题。
+    """
+    expr = expression.strip().replace("×", "*").replace("÷", "/").replace("^", "**")
+    try:
+        tree = ast.parse(expr, mode="eval")
+        result = _safe_eval(tree.body)
+        return f"{expression} = {result}"
+    except Exception as e:
+        return f"计算错误: {e}。请提供合法表达式，如 (123 + 456) * 789 / 12"
+
+_OPERATORS = {
+    ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
+    ast.Div: operator.truediv, ast.FloorDiv: operator.floordiv,
+    ast.Mod: operator.mod, ast.Pow: operator.pow,
+}
+
+def _safe_eval(node):
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+        return node.value
+    if isinstance(node, ast.BinOp):
+        op = _OPERATORS.get(type(node.op))
+        if op is None:
+            raise ValueError(f"不支持的运算符: {type(node.op).__name__}")
+        return op(_safe_eval(node.left), _safe_eval(node.right))
+    if isinstance(node, ast.UnaryOp):
+        v = _safe_eval(node.operand)
+        if isinstance(node.op, ast.USub): return -v
+        if isinstance(node.op, ast.UAdd): return +v
+        raise ValueError("不支持的一元运算符")
+    raise ValueError(f"不支持的表达式节点: {type(node).__name__}（只允许数字与算术运算）")
+
 from typing import Dict, Any
 
 class ToolExecutor:
     """
     一个工具执行器，负责管理和执行工具。
+    如"计算 (123 + 456) × 789/ 12 = ? 的结果"
     """
     def __init__(self):
         self.tools: Dict[str, Dict[str, Any]] = {}
